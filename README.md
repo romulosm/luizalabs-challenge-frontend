@@ -28,6 +28,32 @@ Este frontend permite ao usuário:
 
 ---
 
+## 🛠️ Instruções para Avaliação
+
+### 🔐 Acesso ao Sandbox do Spotify
+
+Este projeto utiliza a [Web API do Spotify](https://developer.spotify.com/documentation/web-api), que impõe restrições de uso para ambientes de desenvolvimento e limita o acesso à ambientes públicos por pessoas físicas.
+
+Para permitir seu acesso à aplicação durante a avaliação, **é necessário que seu e-mail ou número de WhatsApp seja adicionado como usuário autorizado** na conta de desenvolvedor do Spotify usada no projeto.
+
+**📨 Envie uma solicitação de acesso para:**
+
+- **E-mail:** romulo.machado@live.com
+- **WhatsApp:** (51) 99911-0718
+
+Essa etapa é obrigatória devido à política de [quota modes da API](https://developer.spotify.com/documentation/web-api/concepts/quota-modes), que restringe funcionalidades como `/me`, `/top/artists`, `/playlists` e outras a usuários previamente autorizados em aplicações que ainda não foram publicadas.
+
+---
+
+Após o envio, seu e-mail será incluído no ambiente sandbox, permitindo autenticação e uso completo das funcionalidades da aplicação, como:
+
+- Consulta de perfil pessoal
+- Artistas favoritos
+- Playlists criadas
+- Criação de novas playlists
+
+---
+
 ## 💡 Por que usar Vite?
 
 Escolhemos o **Vite** como bundler e dev server por diversos motivos:
