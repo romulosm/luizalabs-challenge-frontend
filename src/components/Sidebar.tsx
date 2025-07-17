@@ -23,7 +23,7 @@ const Sidebar: React.FC<Props> = ({
   activeTab,
   isMobile,
 }) => {
-  const { canInstall, installApp } = usePWAInstall();
+  const { isCompatible, installApp } = usePWAInstall();
 
   const getIconColor = (tab: string) =>
     activeTab === tab ? "#FFFFFF" : "#949EA2";
@@ -94,11 +94,16 @@ const Sidebar: React.FC<Props> = ({
             </button>
           </nav>
         </div>
-        {canInstall && (
-          <button onClick={installApp}>
-            <InstallIcon width="24px" height="24px" color="white" />
-            <span>Instalar PWA</span>
-          </button>
+
+        <button className="install-button" onClick={installApp}>
+          <InstallIcon width="24px" height="24px" color="white" />
+          <span>Instalar PWA</span>
+        </button>
+
+        {!isCompatible && (
+          <div style={{ color: "#ccc", fontSize: "12px", marginTop: "8px" }}>
+            Este navegador não suporta instalação
+          </div>
         )}
       </div>
     </div>

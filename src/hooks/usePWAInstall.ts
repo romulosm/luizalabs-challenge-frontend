@@ -12,18 +12,27 @@ interface BeforeInstallPromptEvent extends Event {
 export function usePWAInstall() {
   const [deferredPrompt, setDeferredPrompt] =
     useState<BeforeInstallPromptEvent | null>(null);
-  const [canInstall, setCanInstall] = useState(false);
+  const [isCompatible, setIsCompatible] = useState(true); // novo
 
   useEffect(() => {
+    let supported = false;
+
     const handler = (e: Event) => {
+      supported = true;
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
-      setCanInstall(true);
     };
 
     window.addEventListener("beforeinstallprompt", handler);
 
-    return () => window.removeEventListener("beforeinstallprompt", handler);
+    const timeout = setTimeout(() => {
+      if (!supported) setIsCompatible(false);
+    }, 3000);
+
+    return () => {
+      window.removeEventListener("beforeinstallprompt", handler);
+      clearTimeout(timeout);
+    };
   }, []);
 
   const installApp = async () => {
@@ -32,9 +41,8 @@ export function usePWAInstall() {
       const { outcome } = await deferredPrompt.userChoice;
       console.log("User choice:", outcome);
       setDeferredPrompt(null);
-      setCanInstall(false);
     }
   };
 
-  return { canInstall, installApp };
+  return { isCompatible, installApp };
 }

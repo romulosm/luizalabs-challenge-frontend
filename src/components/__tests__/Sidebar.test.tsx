@@ -1,31 +1,32 @@
-import "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, it, expect, vi, afterEach } from "vitest";
+import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
 import Sidebar from "../Sidebar";
+import { usePWAInstall } from "../../hooks/usePWAInstall";
 
-const installAppSpy = vi.fn();
-
-vi.mock("../../hooks/usePWAInstall", () => ({
-  usePWAInstall: () => ({
-    canInstall: true,
-    installApp: installAppSpy,
-  }),
-}));
+vi.mock("../../hooks/usePWAInstall");
+const mockedUsePWAInstall = vi.mocked(usePWAInstall);
 
 describe("Sidebar", () => {
   const onClose = vi.fn();
   const setActiveTab = vi.fn();
+  const installAppSpy = vi.fn();
+
+  beforeEach(() => {
+    mockedUsePWAInstall.mockReturnValue({
+      isCompatible: true,
+      installApp: installAppSpy,
+    });
+  });
 
   afterEach(() => {
     vi.clearAllMocks();
-    installAppSpy.mockClear();
   });
 
-  it("renders navigation buttons and handles clicks", async () => {
+  it("renders navigation buttons and handles tab changes", async () => {
     render(
       <Sidebar
-        isOpen={true}
+        isOpen
         onClose={onClose}
         setActiveTab={setActiveTab}
         activeTab="home"
@@ -48,24 +49,22 @@ describe("Sidebar", () => {
   it("calls onClose when close button is clicked on mobile", async () => {
     render(
       <Sidebar
-        isOpen={true}
+        isOpen
         onClose={onClose}
         setActiveTab={setActiveTab}
         activeTab="home"
-        isMobile={true}
+        isMobile
       />
     );
 
-    const closeButton = screen.getByRole("button", { name: "✕" });
-    await userEvent.click(closeButton);
-
+    await userEvent.click(screen.getByRole("button", { name: "✕" }));
     expect(onClose).toHaveBeenCalled();
   });
 
-  it("renders install button when canInstall is true and calls installApp", async () => {
+  it("calls installApp when install button is clicked", async () => {
     render(
       <Sidebar
-        isOpen={true}
+        isOpen
         onClose={onClose}
         setActiveTab={setActiveTab}
         activeTab="home"
@@ -73,11 +72,31 @@ describe("Sidebar", () => {
       />
     );
 
-    expect(screen.getByText("Instalar PWA")).toBeInTheDocument();
-
     const installButton = screen.getByText("Instalar PWA");
-    await userEvent.click(installButton);
+    expect(installButton).toBeInTheDocument();
 
+    await userEvent.click(installButton);
     expect(installAppSpy).toHaveBeenCalled();
+  });
+
+  it("shows warning if PWA is not supported", () => {
+    mockedUsePWAInstall.mockReturnValue({
+      isCompatible: false,
+      installApp: installAppSpy,
+    });
+
+    render(
+      <Sidebar
+        isOpen
+        onClose={onClose}
+        setActiveTab={setActiveTab}
+        activeTab="home"
+        isMobile={false}
+      />
+    );
+
+    expect(
+      screen.getByText("Este navegador não suporta instalação")
+    ).toBeInTheDocument();
   });
 });

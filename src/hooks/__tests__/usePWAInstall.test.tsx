@@ -1,4 +1,3 @@
-import "vitest";
 import { renderHook, act } from "@testing-library/react";
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
 import { usePWAInstall } from "../usePWAInstall";
@@ -13,31 +12,36 @@ interface BeforeInstallPromptEvent extends Event {
 }
 
 describe("usePWAInstall", () => {
-  let originalConsoleLog: typeof console.log;
+  const originalConsoleLog = console.log;
 
   beforeEach(() => {
-    originalConsoleLog = console.log;
-    console.log = vi.fn();
+    vi.useFakeTimers();
+    console.log = vi.fn(); // mocka logs
   });
 
   afterEach(() => {
+    vi.useRealTimers();
     console.log = originalConsoleLog;
     vi.clearAllMocks();
   });
 
-  it("initially has canInstall false", () => {
+  it("should mark isCompatible as false if beforeinstallprompt is not triggered", () => {
     const { result } = renderHook(() => usePWAInstall());
-    expect(result.current.canInstall).toBe(false);
+
+    act(() => {
+      vi.advanceTimersByTime(3000);
+    });
+
+    expect(result.current.isCompatible).toBe(false);
   });
 
-  it("calls prompt and updates state after install", async () => {
+  it("should call prompt and log user choice when installApp is called", async () => {
     const mockPrompt = vi.fn().mockResolvedValue(undefined);
     const mockUserChoice = Promise.resolve({
       outcome: "accepted",
       platform: "web",
     });
 
-    // Cria evento customizado
     const mockEvent = new Event(
       "beforeinstallprompt"
     ) as BeforeInstallPromptEvent;
@@ -52,7 +56,6 @@ describe("usePWAInstall", () => {
 
     const { result } = renderHook(() => usePWAInstall());
 
-    // Dispara evento
     act(() => {
       window.dispatchEvent(mockEvent);
     });
@@ -63,6 +66,5 @@ describe("usePWAInstall", () => {
 
     expect(mockPrompt).toHaveBeenCalled();
     expect(console.log).toHaveBeenCalledWith("User choice:", "accepted");
-    expect(result.current.canInstall).toBe(false);
   });
 });
